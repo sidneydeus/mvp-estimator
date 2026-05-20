@@ -17,9 +17,9 @@
 - [x] Implementação de um logger simples para a aplicação.
 
 ## Fase 3: Integração de Serviços Base (AI Layer)
-- [ ] Criação da camada de `Services` abstrata para integração com IA.
-- [ ] Implementação de um serviço "Mock" de IA para facilitar o desenvolvimento inicial local.
-- [ ] Configuração de timeouts no Express (60s) para requisições de LLM de longa duração.
+- [x] Criação da camada de `Services` abstrata para integração com IA.
+- [x] Implementação de um serviço "Mock" de IA para facilitar o desenvolvimento inicial local.
+- [x] Configuração de timeouts no Express (60s) para requisições de LLM de longa duração.
 
 ## Fase 4: Implementação do Domínio (Business Logic)
 - [ ] **Models/DTOs:** Definir os esquemas **Zod** para o Request de Ingestão de Ideias e os tipos TypeScript inferidos.
