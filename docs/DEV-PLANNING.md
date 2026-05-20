@@ -28,9 +28,9 @@
 - [x] **Services:** Implementar a lógica de orquestração (receber ideia, chamar serviço IA, calcular estimativa).
 
 ## Fase 5: Containerização (Deployability)
-- [ ] Criação do `Dockerfile` multi-stage otimizado para produção.
-- [ ] Criação do `docker-compose.yaml` para ambiente de desenvolvimento local.
-- [ ] Validação do build e execução via Docker.
+- [x] Criação do `Dockerfile` multi-stage otimizado para produção.
+- [x] Criação do `docker-compose.yaml` para ambiente de desenvolvimento local.
+- [x] Validação do build e execução via Docker.
 
 ## Fase 6: Testes e Validação (Quality Assurance)
 - [ ] Setup do framework de testes (ex: Vitest).
