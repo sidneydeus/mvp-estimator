@@ -22,10 +22,10 @@
 - [x] Configuração de timeouts no Express (60s) para requisições de LLM de longa duração.
 
 ## Fase 4: Implementação do Domínio (Business Logic)
-- [ ] **Models/DTOs:** Definir os esquemas **Zod** para o Request de Ingestão de Ideias e os tipos TypeScript inferidos.
-- [ ] **Middlewares:** Criar um middleware genérico de validação de Request utilizando Zod.
-- [ ] **Rotas & Controllers:** Criar o endpoint `POST /api/estimates` acoplando a validação Zod.
-- [ ] **Services:** Implementar a lógica de orquestração (receber ideia, chamar serviço IA, calcular estimativa).
+- [x] **Models/DTOs:** Definir os esquemas **Zod** para o Request de Ingestão de Ideias e os tipos TypeScript inferidos.
+- [x] **Middlewares:** Criar um middleware genérico de validação de Request utilizando Zod.
+- [x] **Rotas & Controllers:** Criar o endpoint `POST /api/estimates` acoplando a validação Zod.
+- [x] **Services:** Implementar a lógica de orquestração (receber ideia, chamar serviço IA, calcular estimativa).
 
 ## Fase 5: Containerização (Deployability)
 - [ ] Criação do `Dockerfile` multi-stage otimizado para produção.

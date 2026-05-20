@@ -3,6 +3,7 @@ import cors from 'cors';
 import { errorHandler } from './middlewares/errorHandler';
 import { sendSuccess } from './utils/response';
 import { logger } from './utils/logger';
+import estimatesRoutes from './routes/estimates.routes';
 
 const app = express();
 
@@ -23,6 +24,9 @@ app.use((req, res, next) => {
   });
   next();
 });
+
+// Rotas
+app.use('/api/estimates', estimatesRoutes);
 
 app.get('/health', (req, res) => {
   sendSuccess(res, { status: 'ok' });
