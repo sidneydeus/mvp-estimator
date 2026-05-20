@@ -10,11 +10,11 @@
 - [x] Setup inicial do Express com configurações básicas (CORS, body-parser de JSON).
 
 ## Fase 2: Core Architecture, Validação & Padronização (Plumbing)
-- [ ] Instalação e configuração do **Zod** para validação de esquemas.
-- [ ] Implementação de validação de variáveis de ambiente usando Zod no momento da inicialização (Fail-fast).
-- [ ] Implementação do Middleware Global de Tratamento de Erros (padronizando respostas de erro e integrando erros do Zod).
-- [ ] Criação de helpers utilitários para padronizar respostas de Sucesso.
-- [ ] Implementação de um logger simples para a aplicação.
+- [x] Instalação e configuração do **Zod** para validação de esquemas.
+- [x] Implementação de validação de variáveis de ambiente usando Zod no momento da inicialização (Fail-fast).
+- [x] Implementação do Middleware Global de Tratamento de Erros (padronizando respostas de erro e integrando erros do Zod).
+- [x] Criação de helpers utilitários para padronizar respostas de Sucesso.
+- [x] Implementação de um logger simples para a aplicação.
 
 ## Fase 3: Integração de Serviços Base (AI Layer)
 - [ ] Criação da camada de `Services` abstrata para integração com IA.

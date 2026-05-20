@@ -90,3 +90,136 @@ Antes de finalizar o PRD, valide:
 - escopo excessivo
 - integrações desnecessárias
 - conflitos arquiteturais
+
+=================================================================================================
+
+Você é um arquiteto sênior de software especializado em arquitetura backend para MVPs web, Node.js e documentação arquitetural baseada em ADR (Architecture Decision Record).
+
+Sua tarefa é gerar um ADR técnico e profissional para definir a arquitetura backend de um sistema web considerando o docs/PRD.md
+
+Salvar em doc/ADR-BACKEND.md
+
+A decisão arquitetural deve definir:
+
+Backend:
+- Node.js
+- Express.js
+
+Arquitetura:
+- padrão MVC
+- princípios SOLID
+- Clean Code
+- separação clara de responsabilidades
+- modularização por domínio
+
+Infraestrutura:
+- execução obrigatória via Docker
+- ambiente containerizado
+- facilidade de deploy local e produção
+
+Comunicação:
+- APIs REST
+- payloads JSON estruturados
+- padronização de respostas
+- padronização de erros
+- estrutura consistente de requests/responses
+
+Ferramentas:
+- Vite para gerenciamento do ambiente e pacotes
+- npm como gerenciador padrão
+- configuração simples e de rápida inicialização
+
+Restrições importantes:
+- o sistema NÃO possui autenticação inicialmente
+- evitar overengineering
+- evitar microsserviços
+- evitar arquitetura enterprise
+- evitar abstrações desnecessárias
+- priorizar simplicidade operacional
+- priorizar facilidade de manutenção
+- priorizar onboarding rápido de desenvolvedores
+
+O ADR deve justificar tecnicamente:
+- escolha do Node.js
+- escolha do Express
+- adoção do padrão MVC
+- adoção de SOLID
+- adoção de Clean Code
+- uso de Docker
+- uso de APIs REST com JSON estruturado
+- escolha do Vite
+- impactos em produtividade
+- impactos em manutenção
+- impactos em escalabilidade futura
+- impactos em testes e debugging
+
+O documento deve também:
+- comparar alternativas rejeitadas
+- explicar trade-offs
+- analisar consequências positivas e negativas
+- analisar riscos arquiteturais
+- considerar contexto de MVP
+
+Estruture o ADR EXATAMENTE nas seguintes seções:
+
+# ADR-XXX — Arquitetura Backend Node.js com Express
+
+Status:
+Data:
+
+# Contexto
+
+# Objetivos Arquiteturais
+
+# Decisão
+
+# Estrutura Arquitetural
+
+# Organização de Diretórios
+
+# Estratégia de Comunicação JSON
+
+# Estratégia de Containerização
+
+# Justificativa Técnica
+
+# Alternativas Consideradas
+
+## Alternativa 1
+### Motivos da rejeição
+
+## Alternativa 2
+### Motivos da rejeição
+
+# Consequências
+
+## Positivas
+
+## Negativas
+
+# Impacto Operacional
+
+# Impacto na Escalabilidade
+
+# Impacto na Manutenção
+
+# Impacto no Desenvolvimento
+
+# Riscos
+
+# Recomendações Futuras
+
+# Nível de Confiança
+
+Regras obrigatórias:
+- utilizar Markdown
+- linguagem técnica objetiva
+- evitar textos genéricos
+- justificar cada decisão arquitetural
+- evitar buzzwords desnecessárias
+- considerar contexto de MVP
+- considerar simplicidade operacional
+- considerar maturidade do ecossistema Node.js
+- considerar facilidade de evolução futura
+
+O documento deve parecer um ADR profissional utilizado em um projeto real de engenharia de software.
