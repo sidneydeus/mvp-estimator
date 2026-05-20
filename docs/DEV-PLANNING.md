@@ -33,6 +33,6 @@
 - [x] Validação do build e execução via Docker.
 
 ## Fase 6: Testes e Validação (Quality Assurance)
-- [ ] Setup do framework de testes (ex: Vitest).
-- [ ] Escrita de Testes Unitários para a lógica de cálculo de tokens/horas e validações do Zod.
-- [ ] Escrita de Testes de Integração para as rotas da API.
+- [x] Setup do framework de testes (ex: Vitest).
+- [x] Escrita de Testes Unitários para a lógica de cálculo de tokens/horas e validações do Zod.
+- [x] Escrita de Testes de Integração para as rotas da API.
