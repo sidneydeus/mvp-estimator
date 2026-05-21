@@ -223,3 +223,14 @@ Regras obrigatórias:
 - considerar facilidade de evolução futura
 
 O documento deve parecer um ADR profissional utilizado em um projeto real de engenharia de software.
+
+
+=================================================================================================
+
+Faça um ADR-FRONTEND.md, incluindo:
+- Desenvolvimento do frontend dessa aplicação, 
+- Utilizando Reactpara consumir a API do backend em node
+
+=================================================================================================
+
+Crie um diretório chamado frontend e desenvolva conforme o ADR-FRONTEND.MD

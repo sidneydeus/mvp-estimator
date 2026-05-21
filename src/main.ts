@@ -2,9 +2,7 @@ import { viteNodeApp } from './app';
 import { env } from './config/env';
 import { logger } from './utils/logger';
 
-if (process.env.NODE_ENV === 'production' || process.env.VITE === 'true') {
-  const port = env.PORT;
-  viteNodeApp.listen(port, () => {
-    logger.info(`Servidor rodando na porta ${port}`);
-  });
-}
+const port = env.PORT;
+viteNodeApp.listen(port, () => {
+  logger.info(`Servidor rodando na porta ${port}`);
+});
