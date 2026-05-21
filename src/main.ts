@@ -8,3 +8,5 @@ if (process.env.NODE_ENV === 'production' || process.env.VITE === 'true') {
     logger.info(`Servidor rodando na porta ${port}`);
   });
 }
+
+export { viteNodeApp };
