@@ -13,3 +13,21 @@ services:
       - PORT=3000
       - VITE=true
     command: npm run dev
+
+  frontend:
+    build:
+      context: ./frontend
+      target: deps # Dev mode: mantém node_modules dentro do container
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    environment:
+      - NODE_ENV=development
+      - VITE_API_TARGET=http://api:3000
+      - VITE_API_BASE_URL=http://localhost:3000
+    command: npm run dev -- --host 0.0.0.0 --port 5173
+    depends_on:
+      - api

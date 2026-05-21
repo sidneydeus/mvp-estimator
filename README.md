@@ -1,6 +1,9 @@
 # MVP Estimator
 
-O MVP Estimator é uma API desenvolvida para fornecer estimativas de custo e tempo para o desenvolvimento de MVPs (Minimum Viable Products), utilizando inteligência artificial para analisar os requisitos.
+O MVP Estimator é uma aplicação para fornecer estimativas de custo e tempo para o desenvolvimento de MVPs (Minimum Viable Products), utilizando inteligência artificial para analisar requisitos. O repositório contém:
+
+- **Backend (API Node/Express)** na raiz do projeto
+- **Frontend (SPA React)** no diretório `frontend/`
 
 ## 🚀 Como Executar o Projeto Localmente
 
@@ -33,7 +36,7 @@ Antes de começar, você precisará ter instalado em sua máquina:
 
 ### 💻 Executando a Aplicação
 
-#### Usando npm (Modo Desenvolvimento)
+#### 1) Subir o Backend (API) — npm (Modo Desenvolvimento)
 
 Para iniciar o servidor com hot-reload (usando Vite):
 ```bash
@@ -41,12 +44,42 @@ npm run dev
 ```
 A API estará disponível em `http://localhost:3000` (ou na porta configurada no seu `.env`).
 
-#### Usando Docker
+Endpoints úteis:
+
+- `GET /health`
+- `POST /estimate`
+
+#### 2) Subir o Frontend (React) — npm (Modo Desenvolvimento)
+
+Em outro terminal:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+O frontend roda em `http://localhost:5173` e faz proxy para o backend em `http://localhost:3000`.
+
+#### Usando Docker (somente backend)
 
 Se preferir rodar o projeto em um container isolado:
 ```bash
 docker-compose up --build
 ```
+
+#### Usando Docker (backend + frontend)
+
+Para subir os dois serviços (API em `:3000` e frontend em `:5173`):
+
+```bash
+docker-compose up --build
+```
+
+Links:
+
+- API: `http://localhost:3000/health`
+- Frontend: `http://localhost:5173`
 
 ### 🧪 Executando Testes
 
