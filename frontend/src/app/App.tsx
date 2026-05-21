@@ -12,7 +12,7 @@ export function App() {
           </p>
         </div>
         <span className="badge">
-          API: <code>/api/estimates</code>
+          API: <code>/estimate</code>
         </span>
       </div>
 
@@ -22,4 +22,3 @@ export function App() {
     </div>
   );
 }
-

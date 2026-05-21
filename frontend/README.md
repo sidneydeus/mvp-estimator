@@ -8,4 +8,4 @@
    - `npm run dev`
 
 O Vite faz proxy de `/api` e `/health` para `http://localhost:3000`.
-
+O endpoint usado pelo frontend é `POST /estimate`.
