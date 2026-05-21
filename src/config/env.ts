@@ -3,10 +3,23 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+const numericEnv = z
+  .string()
+  .optional()
+  .transform((value) => (value ? Number(value) : 0))
+  .pipe(z.number().min(0));
+
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.string().transform(Number).default('3000'),
-  // Adicione outras variáveis conforme necessário (ex: OPENAI_API_KEY)
+  AI_PROVIDER: z.enum(['mock', 'openai-compatible']).optional(),
+  AI_BASE_URL: z.string().url().default('https://api.openai.com/v1'),
+  AI_API_KEY: z.string().min(1).optional(),
+  AI_MODEL: z.string().min(1).optional(),
+  AI_INPUT_COST_PER_1M_TOKENS: numericEnv,
+  AI_OUTPUT_COST_PER_1M_TOKENS: numericEnv,
+  OPENAI_API_KEY: z.string().min(1).optional(),
+  OPENAI_MODEL: z.string().min(1).optional(),
 });
 
 const _env = envSchema.safeParse(process.env);
@@ -16,4 +29,8 @@ if (!_env.success) {
   process.exit(1);
 }
 
-export const env = _env.data;
+export const env = {
+  ..._env.data,
+  AI_API_KEY: _env.data.AI_API_KEY ?? _env.data.OPENAI_API_KEY,
+  AI_MODEL: _env.data.AI_MODEL ?? _env.data.OPENAI_MODEL ?? 'gpt-4o-mini',
+};

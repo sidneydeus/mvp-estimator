@@ -26,6 +26,7 @@ app.use((req, res, next) => {
 });
 
 // Rotas
+app.use('/api/estimates', estimatesRoutes);
 app.use('/estimate', estimatesRoutes);
 
 app.get('/health', (req, res) => {

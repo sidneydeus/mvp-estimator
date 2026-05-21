@@ -1,14 +1,18 @@
-import { BacklogResult, IAIService } from './IAIService';
+import { AICodeGenerationPricing, BacklogResult, IAIService } from './IAIService';
 import { logger } from '../../utils/logger';
+import { estimateAICodeGeneration } from './AICodeGenerationEstimator';
 
 export class MockAIService implements IAIService {
-  async generateBacklog(ideaDescription: string): Promise<BacklogResult> {
+  async generateBacklog(
+    ideaDescription: string,
+    pricing?: AICodeGenerationPricing,
+  ): Promise<BacklogResult> {
     logger.info('Simulando geração de backlog via IA...');
     
     // Simula um delay de processamento de IA
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    return {
+    const backlog = {
       vision: `Visão do Produto baseada em: ${ideaDescription.substring(0, 50)}...`,
       epics: [
         {
@@ -21,7 +25,7 @@ export class MockAIService implements IAIService {
               title: 'Login via Email',
               description: 'Como usuário, quero logar para acessar meus dados.',
               acceptanceCriteria: ['Validar email', 'Validar senha'],
-              complexityTokens: 1200,
+              complexityPoints: 3,
             },
           ],
         },
@@ -35,16 +39,43 @@ export class MockAIService implements IAIService {
               title: 'Funcionalidade Principal 1',
               description: 'Descrição da funcionalidade principal.',
               acceptanceCriteria: ['Critério 1', 'Critério 2'],
-              complexityTokens: 2500,
+              complexityPoints: 8,
             },
           ],
         },
       ],
-      totalTokens: 3700,
+      totalComplexityPoints: 11,
       estimatedHours: {
         min: 80,
         max: 120,
       },
+      aiTokenEstimate: {
+        planningAndContextTokens: {
+          min: 7_200,
+          max: 14_000,
+        },
+        codeGenerationInputTokens: {
+          min: 200_000,
+          max: 540_000,
+        },
+        codeGenerationOutputTokens: {
+          min: 72_000,
+          max: 216_000,
+        },
+        validationAndFixInputTokens: {
+          min: 64_000,
+          max: 180_000,
+        },
+        validationAndFixOutputTokens: {
+          min: 20_000,
+          max: 84_000,
+        },
+      },
+    };
+
+    return {
+      ...backlog,
+      aiCodeGenerationEstimate: estimateAICodeGeneration(backlog, pricing),
     };
   }
 }

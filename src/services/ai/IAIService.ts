@@ -3,7 +3,7 @@ export interface UserStory {
   title: string;
   description: string;
   acceptanceCriteria: string[];
-  complexityTokens: number;
+  complexityPoints: number;
 }
 
 export interface Epic {
@@ -16,13 +16,76 @@ export interface Epic {
 export interface BacklogResult {
   vision: string;
   epics: Epic[];
-  totalTokens: number;
+  totalComplexityPoints: number;
   estimatedHours: {
     min: number;
     max: number;
   };
+  aiTokenEstimate: AITokenEstimate;
+  aiCodeGenerationEstimate: AICodeGenerationEstimate;
 }
 
 export interface IAIService {
-  generateBacklog(ideaDescription: string): Promise<BacklogResult>;
+  generateBacklog(
+    ideaDescription: string,
+    pricing?: AICodeGenerationPricing,
+  ): Promise<BacklogResult>;
+}
+
+export interface AICodeGenerationPricing {
+  inputCostPer1MTokens: number;
+  outputCostPer1MTokens: number;
+}
+
+export interface AITokenEstimate {
+  planningAndContextTokens: TokenRange;
+  codeGenerationInputTokens: TokenRange;
+  codeGenerationOutputTokens: TokenRange;
+  validationAndFixInputTokens: TokenRange;
+  validationAndFixOutputTokens: TokenRange;
+}
+
+export interface AICodeGenerationEstimate {
+  assumptions: {
+    workflow: string;
+    includes: string[];
+    excludes: string[];
+  };
+  tokenEstimate: {
+    planningAndContextTokens: TokenRange;
+    codeGenerationInputTokens: TokenRange;
+    codeGenerationOutputTokens: TokenRange;
+    validationAndFixInputTokens: TokenRange;
+    validationAndFixOutputTokens: TokenRange;
+    totalInputTokens: TokenRange;
+    totalOutputTokens: TokenRange;
+    totalTokens: TokenRange;
+  };
+  costEstimate: {
+    currency: 'USD';
+    inputCostPer1MTokens: number;
+    outputCostPer1MTokens: number;
+    min: number;
+    max: number;
+    display: {
+      range: string;
+      min: string;
+      max: string;
+      inputCostPer1MTokens: string;
+      outputCostPer1MTokens: string;
+    };
+    note: string;
+  };
+  display: {
+    totalInputTokens: string;
+    totalOutputTokens: string;
+    totalTokens: string;
+    estimatedCost: string;
+    pricing: string;
+  };
+}
+
+export interface TokenRange {
+  min: number;
+  max: number;
 }
