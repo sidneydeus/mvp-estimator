@@ -13,7 +13,7 @@ flowchart TD
     Valid -- Não --> Form
     Valid -- Sim --> Submit["Clica Gerar Estimativa"]
     Submit --> Loading["Frontend mostra<br/>'Gerando backlog...'"]
-    Loading --> POST["POST /api/estimates/"]
+    Loading --> POST[/ "POST /api/estimates/" /]
 
     POST --> Zod{"Zod valida<br/>payload?"}
     Zod -- Não --> Err400["HTTP 400<br/>VALIDATION_ERROR"]
@@ -40,7 +40,7 @@ flowchart TD
     ErrSchema --> ShowErr
     SchemaCheck -- Sim --> Estimate["estimateAICodeGeneration"]
 
-    Estimate --> Resp["HTTP 201<br/>data: BacklogResult"]
+    Estimate --> Resp[/ "HTTP 201<br/>data: BacklogResult" /]
     Resp --> Render["Frontend renderiza<br/>EstimateResult"]
     Render --> Show["Visão + Épicos + Stories +<br/>Critérios + Estimativa financeira"]
 
