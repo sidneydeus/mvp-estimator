@@ -1,0 +1,38 @@
+%%{init: {"theme": "dark", "themeVariables": {"primaryColor": "#7c3aed", "primaryTextColor": "#fff", "primaryBorderColor": "#a78bfa", "lineColor": "#a78bfa", "secondaryColor": "#0d1526", "tertiaryColor": "#1e1b4b"}}}%%
+graph TD
+    U(["👤 Usuário"])
+    AI(["🤖 Sistema de IA\nGroq Cloud"])
+
+    subgraph MVP_ESTIMATOR ["🖥️ MVP Estimator"]
+        UC1["📝 Descrever ideia\nde software"]
+        UC2["⚡ Gerar estimativa\nde backlog"]
+        UC3["📊 Visualizar resultado\n(Visão + Épicos + Stories)"]
+        UC4["📋 Copiar Markdown\npara área de transferência"]
+        UC5["⬇️ Baixar arquivo .md"]
+        UC6["🗑️ Limpar formulário"]
+        UC7["⚠️ Visualizar erro\nde processamento"]
+    end
+
+    subgraph BACKEND ["⚙️ Backend (interno)"]
+        UC8["✅ Validar payload\n(Zod Schema)"]
+        UC9["🧠 Processar ideia\ncom LLM"]
+        UC10["🔢 Calcular estimativa\nde horas por tokens"]
+    end
+
+    U --> UC1
+    U --> UC2
+    U --> UC3
+    U --> UC4
+    U --> UC5
+    U --> UC6
+    U --> UC7
+
+    UC2 -.->|"«include»"| UC8
+    UC2 -.->|"«include»"| UC9
+    UC9 -.->|"«include»"| UC10
+
+    UC4 -.->|"«extend»\n[resultado disponível]"| UC3
+    UC5 -.->|"«extend»\n[resultado disponível]"| UC3
+    UC7 -.->|"«extend»\n[erro na geração]"| UC2
+
+    AI --> UC9

@@ -12,14 +12,35 @@ function download(filename: string, text: string) {
   URL.revokeObjectURL(url);
 }
 
+type CopyState = 'idle' | 'success' | 'error';
+
 export function ExportMarkdownButton(props: { result: BacklogResult }) {
-  const [copied, setCopied] = useState(false);
+  const [copyState, setCopyState] = useState<CopyState>('idle');
 
   async function handleCopy() {
     const md = backlogToMarkdown(props.result);
-    await navigator.clipboard.writeText(md);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(md);
+      setCopyState('success');
+    } catch {
+      // Fallback para contextos sem permissão de clipboard (HTTP, iframes, etc.)
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = md;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        setCopyState('success');
+      } catch {
+        setCopyState('error');
+      }
+    } finally {
+      setTimeout(() => setCopyState('idle'), 2500);
+    }
   }
 
   function handleDownload() {
@@ -31,12 +52,12 @@ export function ExportMarkdownButton(props: { result: BacklogResult }) {
   return (
     <div className="row">
       <button
-        className={`btn ${copied ? 'success' : ''}`}
+        className={`btn ${copyState === 'success' ? 'success' : copyState === 'error' ? 'danger-btn' : ''}`}
         onClick={handleCopy}
         type="button"
         aria-label="Copiar backlog em Markdown"
       >
-        {copied ? '✓ Copiado!' : '📋 Copiar Markdown'}
+        {copyState === 'success' ? '✓ Copiado!' : copyState === 'error' ? '✗ Falha ao copiar' : '📋 Copiar Markdown'}
       </button>
       <button
         className="btn"
