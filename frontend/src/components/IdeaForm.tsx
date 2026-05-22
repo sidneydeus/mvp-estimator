@@ -11,14 +11,16 @@ export function IdeaForm(props: {
 
   return (
     <div className="card">
-      <h3 className="sectionTitle">1 — Descreva sua ideia</h3>
+      <h3 className="sectionTitle" id="idea-label">1 — Descreva sua ideia</h3>
       <textarea
         value={props.value}
         onChange={(e) => props.onChange(e.target.value)}
         disabled={props.disabled}
         maxLength={props.maxLength}
-        placeholder="Ex: Quero um app de delivery para pets que permita agendar passeios, banho e tosa, com pagamento integrado e rastreamento em tempo real..."
-        aria-label="Descrição da ideia de software"
+        placeholder="Ex: Quero um app de delivery para pets com agendamento, pagamento integrado e rastreamento em tempo real..."
+        aria-labelledby="idea-label"
+        aria-describedby="idea-hint idea-counter"
+        aria-required="true"
       />
 
       <div className="progress-bar-wrap" role="progressbar" aria-valuenow={used} aria-valuemax={props.maxLength}>
@@ -29,14 +31,14 @@ export function IdeaForm(props: {
       </div>
 
       <div className="row" style={{ marginTop: 8, justifyContent: 'space-between' }}>
-        <span className="muted">
+        <span className="muted" id="idea-counter" aria-live="polite">
           {remaining > 0 ? (
             <><strong style={{ color: barClass === 'danger' ? 'var(--danger)' : barClass === 'warn' ? 'var(--warning)' : 'var(--text)' }}>{remaining}</strong> caracteres restantes</>
           ) : (
             <span style={{ color: 'var(--danger)' }}>Limite atingido</span>
           )}
         </span>
-        <span className="muted">Dica: inclua público-alvo, features e restrições.</span>
+        <span className="muted" id="idea-hint">Dica: inclua público-alvo, features e restrições.</span>
       </div>
     </div>
   );

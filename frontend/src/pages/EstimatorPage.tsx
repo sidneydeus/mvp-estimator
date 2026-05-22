@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { createEstimate } from '../api/estimates';
 import type { ApiError, ApiSuccess, BacklogResult } from '../domain/types';
 import { IdeaForm } from '../components/IdeaForm';
@@ -17,6 +17,19 @@ export function EstimatorPage() {
   const [error, setError] = useState<{ title: string; message?: string; details?: unknown } | null>(null);
 
   const isValid = useMemo(() => idea.trim().length >= IDEA_MIN, [idea]);
+
+  // Título dinâmico da aba durante o processamento
+  useEffect(() => {
+    const base = 'MVP Estimator';
+    if (loading) {
+      document.title = `⏳ Gerando… — ${base}`;
+    } else if (result) {
+      document.title = `✓ Pronto — ${base}`;
+    } else {
+      document.title = base;
+    }
+    return () => { document.title = base; };
+  }, [loading, result]);
 
   async function onSubmit() {
     setLoading(true);

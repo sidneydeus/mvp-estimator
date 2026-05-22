@@ -258,6 +258,12 @@ textarea:focus {
   color: #86efac;
 }
 
+.btn.danger-btn {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #fca5a5;
+}
+
 .btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
