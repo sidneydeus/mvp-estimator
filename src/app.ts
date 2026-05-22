@@ -26,7 +26,7 @@ app.use((req, res, next) => {
 });
 
 // Rotas
-app.use('/estimate', estimatesRoutes);
+app.use('/api/estimates', estimatesRoutes);
 
 app.get('/health', (req, res) => {
   sendSuccess(res, { status: 'ok' });
