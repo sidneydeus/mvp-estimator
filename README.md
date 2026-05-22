@@ -29,8 +29,76 @@ Antes de começar, você precisará ter instalado em sua máquina:
     ```bash
     cp .env.example .env
     ```
+<<<<<<< HEAD
     Edite o arquivo `.env` e configure as variáveis necessárias.
     Para ativar o agente de IA com Groq, defina `GROQ_API_KEY` e, opcionalmente, `GROQ_MODEL`.
+=======
+    Edite o arquivo `.env` e configure a porta e o provedor de LLM.
+
+    Para rodar sem consultar uma LLM real:
+    ```env
+    AI_PROVIDER=mock
+    ```
+
+    Para usar um provedor compatível com OpenAI Chat Completions:
+    ```env
+    AI_PROVIDER=openai-compatible
+    AI_BASE_URL=https://api.openai.com/v1
+    AI_API_KEY=sua_chave
+    AI_MODEL=gpt-4o-mini
+    AI_INPUT_COST_PER_1M_TOKENS=0
+    AI_OUTPUT_COST_PER_1M_TOKENS=0
+    ```
+
+    Exemplo com xAI/Grok:
+    ```env
+    AI_PROVIDER=openai-compatible
+    AI_BASE_URL=https://api.x.ai/v1
+    AI_API_KEY=sua_chave_xai
+    AI_MODEL=grok-4
+    AI_INPUT_COST_PER_1M_TOKENS=0
+    AI_OUTPUT_COST_PER_1M_TOKENS=0
+    ```
+
+    Exemplo com Google Gemini:
+    ```env
+    AI_PROVIDER=openai-compatible
+    AI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
+    AI_API_KEY=sua_chave_gemini
+    AI_MODEL=gemini-3.5-flash
+    AI_INPUT_COST_PER_1M_TOKENS=0
+    AI_OUTPUT_COST_PER_1M_TOKENS=0
+    ```
+
+    O backend chama `${AI_BASE_URL}/chat/completions`, então informe a base URL incluindo `/v1` quando o provedor exigir.
+    Configure `AI_INPUT_COST_PER_1M_TOKENS` e `AI_OUTPUT_COST_PER_1M_TOKENS` com os preços do modelo escolhido para calcular a estimativa de custo de geração de código.
+
+    Também é possível sobrescrever os preços por requisição:
+    ```json
+    {
+      "ideaDescription": "Quero criar uma plataforma SaaS para gestão de clínicas.",
+      "aiPricing": {
+        "inputCostPer1MTokens": 0.30,
+        "outputCostPer1MTokens": 2.50
+      }
+    }
+    ```
+
+    A LLM retorna a estimativa base de tokens em `aiTokenEstimate`. A aplicação calcula a media dos ranges, soma os valores e entrega `aiCodeGenerationEstimate` já pronto para exibicao usando `aiPricing` da request ou os preços do `.env`.
+
+    Para validar a conexão Gemini diretamente:
+    ```bash
+    curl "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer $AI_API_KEY" \
+      -d '{
+        "model": "gemini-3.5-flash",
+        "messages": [
+          { "role": "user", "content": "Responda apenas OK." }
+        ]
+      }'
+    ```
+>>>>>>> feature/adr-backend
 
 ### 💻 Executando a Aplicação
 

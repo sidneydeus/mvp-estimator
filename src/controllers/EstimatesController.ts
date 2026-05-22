@@ -1,17 +1,21 @@
 import { Request, Response, NextFunction } from 'express';
+import { createAIService } from '../services/ai/AIServiceFactory';
 import { sendSuccess } from '../utils/response';
 import { logger } from '../utils/logger';
-import { getAIService } from '../services/ai/aiServiceFactory';
+
+const aiService = createAIService();
 
 export class EstimatesController {
   static async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const { ideaDescription } = req.body;
+      const { ideaDescription, aiPricing } = req.body;
 
       logger.info('Recebida nova solicitação de estimativa');
 
-      const aiService = getAIService();
-      const result = await aiService.generateBacklog(ideaDescription);
+      const result = await aiService.generateBacklog(
+        ideaDescription,
+        aiPricing,
+      );
 
       return sendSuccess(res, result, 201);
     } catch (error) {
