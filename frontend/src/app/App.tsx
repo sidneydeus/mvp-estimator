@@ -3,18 +3,21 @@ import { EstimatorPage } from '../pages/EstimatorPage';
 export function App() {
   return (
     <div className="container">
-      <div className="header">
-        <div>
-          <h1 className="title">MVP Estimator</h1>
-          <p className="subtitle">
-            Cole a sua ideia, gere um backlog e obtenha uma estimativa baseada em tokens. Tempo de
-            resposta pode chegar a 60s.
-          </p>
+      <header className="header">
+        <div className="header-left">
+          <div className="logo-icon" aria-hidden="true">⚡</div>
+          <div>
+            <h1 className="title">MVP Estimator</h1>
+            <p className="subtitle">
+              Cole sua ideia, gere um backlog estruturado e obtenha uma estimativa de horas com IA.
+            </p>
+          </div>
         </div>
-        <span className="badge">
-          API: <code>/api/estimates</code>
+        <span className="badge accent">
+          <span>POST</span>
+          <code>/api/estimates</code>
         </span>
-      </div>
+      </header>
 
       <div className="grid">
         <EstimatorPage />
@@ -22,4 +25,3 @@ export function App() {
     </div>
   );
 }
-
