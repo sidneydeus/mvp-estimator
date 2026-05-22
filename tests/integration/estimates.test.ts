@@ -22,6 +22,10 @@ describe('Estimates API Integration Tests', () => {
       .post('/api/estimates')
       .send(payload);
 
+    if (response.status !== 201) {
+      console.error('API Response Error Body:', JSON.stringify(response.body, null, 2));
+    }
+
     expect(response.status).toBe(201);
     expect(response.body.success).toBe(true);
     expect(response.body.data.vision).toBeDefined();
@@ -36,26 +40,45 @@ describe('Estimates API Integration Tests', () => {
     expect(response.body.data.aiCodeGenerationEstimate.costEstimate.display.range).toContain('$');
     expect(response.body.data.aiCodeGenerationEstimate.display.totalTokens).toContain('tokens');
     expect(response.body.data.aiCodeGenerationEstimate.display.estimatedCost).toContain('$');
-    expect(response.body.data.aiCodeGenerationEstimate.costEstimate.min).toBe(
-      response.body.data.aiCodeGenerationEstimate.costEstimate.max,
-    );
 
     const { aiTokenEstimate, aiCodeGenerationEstimate } = response.body.data;
-    expect(aiTokenEstimate.codeGenerationInputTokens.min).toBeGreaterThan(0);
-    const avgInput =
-      Math.round((aiTokenEstimate.planningAndContextTokens.min + aiTokenEstimate.planningAndContextTokens.max) / 2) +
-      Math.round((aiTokenEstimate.codeGenerationInputTokens.min + aiTokenEstimate.codeGenerationInputTokens.max) / 2) +
-      Math.round((aiTokenEstimate.validationAndFixInputTokens.min + aiTokenEstimate.validationAndFixInputTokens.max) / 2);
-    const avgOutput =
-      Math.round((aiTokenEstimate.codeGenerationOutputTokens.min + aiTokenEstimate.codeGenerationOutputTokens.max) / 2) +
-      Math.round((aiTokenEstimate.validationAndFixOutputTokens.min + aiTokenEstimate.validationAndFixOutputTokens.max) / 2);
+    // expect(aiTokenEstimate.codeGenerationInputTokens.min).toBeGreaterThan(0); // Removido pois agora é agregado das histórias
 
-    expect(aiCodeGenerationEstimate.tokenEstimate.totalInputTokens.min).toBe(avgInput);
-    expect(aiCodeGenerationEstimate.tokenEstimate.totalOutputTokens.min).toBe(avgOutput);
-    expect(aiCodeGenerationEstimate.tokenEstimate.totalInputTokens.min).toBe(
-      aiCodeGenerationEstimate.tokenEstimate.totalInputTokens.max,
+    const sumMinInput =
+      aiTokenEstimate.planningAndContextTokens.min +
+      aiCodeGenerationEstimate.tokenEstimate.codeGenerationInputTokens.min +
+      aiTokenEstimate.validationAndFixInputTokens.min;
+
+    const sumMaxInput =
+      aiTokenEstimate.planningAndContextTokens.max +
+      aiCodeGenerationEstimate.tokenEstimate.codeGenerationInputTokens.max +
+      aiTokenEstimate.validationAndFixInputTokens.max;
+
+    const sumMinOutput =
+      aiCodeGenerationEstimate.tokenEstimate.codeGenerationOutputTokens.min +
+      aiTokenEstimate.validationAndFixOutputTokens.min;
+
+    const sumMaxOutput =
+      aiCodeGenerationEstimate.tokenEstimate.codeGenerationOutputTokens.max +
+      aiTokenEstimate.validationAndFixOutputTokens.max;
+
+    expect(aiCodeGenerationEstimate.tokenEstimate.totalInputTokens.min).toBe(sumMinInput);
+    expect(aiCodeGenerationEstimate.tokenEstimate.totalInputTokens.max).toBe(sumMaxInput);
+    expect(aiCodeGenerationEstimate.tokenEstimate.totalOutputTokens.min).toBe(sumMinOutput);
+    expect(aiCodeGenerationEstimate.tokenEstimate.totalOutputTokens.max).toBe(sumMaxOutput);
+
+    // Custo mínimo esperado
+    const expectedMinCost = Number(
+      ((sumMinInput / 1_000_000) * 0.3 + (sumMinOutput / 1_000_000) * 2.5).toFixed(4),
     );
-  });
+    expect(aiCodeGenerationEstimate.costEstimate.min).toBeCloseTo(expectedMinCost, 4);
+
+    // Custo máximo esperado
+    const expectedMaxCost = Number(
+      ((sumMaxInput / 1_000_000) * 0.3 + (sumMaxOutput / 1_000_000) * 2.5).toFixed(4),
+    );
+    expect(aiCodeGenerationEstimate.costEstimate.max).toBeCloseTo(expectedMaxCost, 4);
+  }, 30000); // Aumentado para 30s devido à latência da LLM
 
   it('POST /api/estimates deve retornar 400 para payload inválido', async () => {
     const payload = { ideaDescription: 'Curto' };

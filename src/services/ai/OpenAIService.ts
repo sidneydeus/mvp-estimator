@@ -4,6 +4,21 @@ import { env } from '../../config/env';
 import { logger } from '../../utils/logger';
 import { estimateAICodeGeneration } from './AICodeGenerationEstimator';
 
+function tokenRangeSchema() {
+  return z
+    .object({
+      min: z.coerce.number().int().min(0),
+      max: z.coerce.number().int().min(0),
+    })
+    .transform((range) => {
+      // Se a IA inverter min/max, nós corrigimos automaticamente
+      return {
+        min: Math.min(range.min, range.max),
+        max: Math.max(range.min, range.max),
+      };
+    });
+}
+
 const backlogResultSchema = z.object({
   vision: z.string(),
   epics: z.array(
@@ -17,20 +32,22 @@ const backlogResultSchema = z.object({
           title: z.string(),
           description: z.string(),
           acceptanceCriteria: z.array(z.string()),
-          complexityPoints: z.number().int().min(1).max(13),
+          complexityPoints: z.coerce.number().int().min(1).max(21),
+          estimatedTokens: z.object({
+            input: tokenRangeSchema(),
+            output: tokenRangeSchema(),
+          }),
         }),
       ),
     }),
   ),
-  totalComplexityPoints: z.number(),
+  totalComplexityPoints: z.coerce.number(),
   estimatedHours: z.object({
-    min: z.number(),
-    max: z.number(),
+    min: z.coerce.number(),
+    max: z.coerce.number(),
   }),
   aiTokenEstimate: z.object({
     planningAndContextTokens: tokenRangeSchema(),
-    codeGenerationInputTokens: tokenRangeSchema(),
-    codeGenerationOutputTokens: tokenRangeSchema(),
     validationAndFixInputTokens: tokenRangeSchema(),
     validationAndFixOutputTokens: tokenRangeSchema(),
   }),
@@ -59,15 +76,14 @@ const genericProviderErrorSchema = z.object({
   code: z.string().nullable().optional(),
 });
 
-function tokenRangeSchema() {
-  return z
-    .object({
-      min: z.number().int().min(0),
-      max: z.number().int().min(0),
-    })
-    .refine((range) => range.max >= range.min, {
-      message: 'max deve ser maior ou igual a min',
-    });
+/**
+ * Limpa a string de resposta da LLM para garantir que seja um JSON válido.
+ */
+function cleanJsonContent(content: string): string {
+  let cleaned = content.trim();
+  // Remove markdown code blocks if present
+  cleaned = cleaned.replace(/^```json\s*/, '').replace(/```$/, '');
+  return cleaned.trim();
 }
 
 export class OpenAIService implements IAIService {
@@ -98,7 +114,7 @@ export class OpenAIService implements IAIService {
           {
             role: 'system',
             content:
-              'Você é um especialista sênior em planejamento de MVPs. Responda somente com JSON válido no formato solicitado.',
+              'Você é um especialista sênior em planejamento de MVPs e arquiteto de software. Sua tarefa é analisar a ideia do usuário e retornar um planejamento técnico rigoroso em formato JSON. Siga estritamente o esquema solicitado, sem explicações adicionais.',
           },
           {
             role: 'user',
@@ -128,15 +144,28 @@ export class OpenAIService implements IAIService {
       });
     }
 
+    console.log('--- RAW LLM RESPONSE START ---');
+    console.log(content);
+    console.log('--- RAW LLM RESPONSE END ---');
+
     try {
-      const backlog = backlogResultSchema.parse(JSON.parse(content));
+      const cleanedContent = cleanJsonContent(content);
+      const parsedContent = JSON.parse(cleanedContent);
+      const backlog = backlogResultSchema.parse(parsedContent);
 
       return {
         ...backlog,
         aiCodeGenerationEstimate: estimateAICodeGeneration(backlog, pricing),
       };
     } catch (error) {
-      logger.error('Resposta da LLM não respeitou o contrato esperado', error);
+      if (error instanceof z.ZodError) {
+        logger.error('Erro de validação na resposta da LLM:', {
+          issues: error.issues,
+          content: content.substring(0, 500),
+        });
+      } else {
+        logger.error('Erro inesperado ao processar resposta da LLM:', error);
+      }
       throw Object.assign(new Error('Resposta inválida recebida da LLM'), {
         status: 502,
         code: 'AI_INVALID_RESPONSE',
@@ -165,7 +194,11 @@ Responda exclusivamente com um JSON neste formato:
           "title": "string",
           "description": "string",
           "acceptanceCriteria": ["string"],
-          "complexityPoints": 5
+          "complexityPoints": 5,
+          "estimatedTokens": {
+            "input": { "min": 150000, "max": 400000 },
+            "output": { "min": 80000, "max": 200000 }
+          }
         }
       ]
     }
@@ -176,25 +209,23 @@ Responda exclusivamente com um JSON neste formato:
     "max": 80
   },
   "aiTokenEstimate": {
-    "planningAndContextTokens": { "min": 10000, "max": 25000 },
-    "codeGenerationInputTokens": { "min": 250000, "max": 700000 },
-    "codeGenerationOutputTokens": { "min": 90000, "max": 260000 },
-    "validationAndFixInputTokens": { "min": 80000, "max": 250000 },
-    "validationAndFixOutputTokens": { "min": 25000, "max": 100000 }
+    "planningAndContextTokens": { "min": 200000, "max": 500000 },
+    "validationAndFixInputTokens": { "min": 400000, "max": 1200000 },
+    "validationAndFixOutputTokens": { "min": 100000, "max": 300000 }
   }
 }
 
-Regras:
+Regras cruciais:
+- Use exclusivamente o campo "complexityPoints" para a complexidade das histórias (NUNCA use "complexityTokens").
+- "complexityPoints" deve ser um número inteiro seguindo a sequência de Fibonacci (1, 2, 3, 5, 8, 13).
+- "totalComplexityPoints" deve ser a soma exata de todos os "complexityPoints".
+- "estimatedTokens" em cada história DEVE refletir o custo real de produzir uma feature completa: criação de múltiplos arquivos (Frontend, Backend, Testes, Estilos), múltiplas iterações de correção e o envio recorrente do contexto do projeto. Seja extremamente realista: uma única história de usuário profissional pode consumir de 200.000 a 600.000 tokens no ciclo total.
 - Use PT-BR.
 - Crie de 2 a 4 épicos.
 - Crie de 1 a 3 histórias por épico.
-- Use complexityPoints como pontos funcionais por história, de 1 a 13, onde 1 é trivial, 5 é médio, 8 é complexo e 13 é muito complexo.
-- Calcule totalComplexityPoints como a soma dos complexityPoints.
-- Estime horas com base na complexidade funcional do MVP.
-- Estime aiTokenEstimate para a geração assistida por IA do código do projeto, não para esta chamada de planejamento.
-- Separe tokens de entrada e saída: campos terminados em InputTokens são entrada; campos terminados em OutputTokens são saída.
-- Considere prompts iterativos com contexto de arquitetura, geração de código, execução de testes, revisão e correções.
-- Não calcule totais de tokens nem custo; o backend fará essa soma e aplicará os preços.
+- Estime horas (min e max) de forma dinâmica e proporcional à complexidade funcional total do MVP (totalComplexityPoints). Como referência, cada 1 ponto de complexidade equivale a aproximadamente 4 a 8 horas de desenvolvimento real.
+- Estime aiTokenEstimate para o overhead global (arquitetura, segurança, integração CI/CD, revisões). Projetos profissionais assistidos por IA consomem facilmente de 5 a 15 MILHÕES de tokens para um MVP robusto.
+- Retorne apenas o objeto JSON, sem markdown ou texto extra.
 `.trim();
   }
 

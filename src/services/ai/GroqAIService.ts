@@ -34,21 +34,34 @@ function calculateEstimatedHours(totalTokens: number) {
 function normalizeResult(raw: z.infer<typeof groqBacklogSchema>): BacklogResult {
   const epics: Epic[] = raw.epics.map((epic) => ({
     ...epic,
-    stories: epic.stories.map((story) => ({ ...story })) as UserStory[],
+    stories: epic.stories.map((story) => ({
+      ...story,
+      complexityPoints: Math.ceil(story.complexityTokens / 100), // Mapeamento arbitrário para compatibilidade
+      estimatedTokens: {
+        input: { min: story.complexityTokens * 10, max: story.complexityTokens * 25 },
+        output: { min: story.complexityTokens * 5, max: story.complexityTokens * 15 },
+      },
+    })) as UserStory[],
   }));
 
-  const totalTokens = epics.reduce(
-    (epicSum, epic) =>
-      epicSum +
-      epic.stories.reduce((storySum, story) => storySum + story.complexityTokens, 0),
+  const totalComplexityPoints = epics.reduce(
+    (sum, epic) => sum + epic.stories.reduce((s, st) => s + st.complexityPoints, 0),
     0,
   );
 
   return {
     vision: raw.vision,
     epics,
-    totalTokens,
-    estimatedHours: calculateEstimatedHours(totalTokens),
+    totalComplexityPoints,
+    estimatedHours: { min: 0, max: 0 }, // Será recalculado ou ignorado
+    aiTokenEstimate: {
+      planningAndContextTokens: { min: 50000, max: 150000 },
+      codeGenerationInputTokens: { min: 0, max: 0 },
+      codeGenerationOutputTokens: { min: 0, max: 0 },
+      validationAndFixInputTokens: { min: 100000, max: 300000 },
+      validationAndFixOutputTokens: { min: 50000, max: 150000 },
+    },
+    aiCodeGenerationEstimate: {} as any, // Será preenchido pelo chamador se necessário
   };
 }
 

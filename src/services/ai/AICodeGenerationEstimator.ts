@@ -6,30 +6,82 @@ import {
   TokenRange,
 } from './IAIService';
 import { env } from '../../config/env';
+import { logger } from '../../utils/logger';
 
 type BacklogWithoutAIEstimate = Omit<BacklogResult, 'aiCodeGenerationEstimate'>;
 
 export const estimateAICodeGeneration = (
   backlog: BacklogWithoutAIEstimate,
-  pricing: AICodeGenerationPricing = {
-    inputCostPer1MTokens: env.AI_INPUT_COST_PER_1M_TOKENS,
-    outputCostPer1MTokens: env.AI_OUTPUT_COST_PER_1M_TOKENS,
-  },
+  pricing?: AICodeGenerationPricing,
 ): AICodeGenerationEstimate => {
-  const normalizedTokenEstimate = normalizeTokenEstimate(backlog.aiTokenEstimate);
-  const averagedTokenEstimate = averageTokenEstimateRanges(normalizedTokenEstimate);
+  // Garantir que temos valores de pricing, mesmo que o objeto venha parcial ou nulo
+  const effectivePricing: AICodeGenerationPricing = {
+    inputCostPer1MTokens: pricing?.inputCostPer1MTokens ?? env.AI_INPUT_COST_PER_1M_TOKENS ?? 5.00,
+    outputCostPer1MTokens: pricing?.outputCostPer1MTokens ?? env.AI_OUTPUT_COST_PER_1M_TOKENS ?? 15.00,
+    costPerComplexityPoint: pricing?.costPerComplexityPoint ?? env.AI_COST_PER_COMPLEXITY_POINT ?? 10.0,
+    hourlyRate: pricing?.hourlyRate ?? 50.0, // Valor padrão realista para desenvolvimento
+  };
 
-  const totalInputTokens = sumValues(
-    averagedTokenEstimate.planningAndContextTokens,
-    averagedTokenEstimate.codeGenerationInputTokens,
-    averagedTokenEstimate.validationAndFixInputTokens,
+  const normalizedTokenEstimate = normalizeTokenEstimate(backlog.aiTokenEstimate);
+
+  // Somar tokens de todas as histórias
+  let storyInputMin = 0;
+  let storyInputMax = 0;
+  let storyOutputMin = 0;
+  let storyOutputMax = 0;
+
+  backlog.epics.forEach((epic) => {
+    epic.stories.forEach((story) => {
+      const tokens = story.estimatedTokens || {
+        input: { min: 0, max: 0 },
+        output: { min: 0, max: 0 },
+      };
+      storyInputMin += tokens.input.min || 0;
+      storyInputMax += tokens.input.max || 0;
+      storyOutputMin += tokens.output.min || 0;
+      storyOutputMax += tokens.output.max || 0;
+    });
+  });
+
+  const inputMin = sumValues(
+    normalizedTokenEstimate.planningAndContextTokens.min,
+    storyInputMin,
+    normalizedTokenEstimate.validationAndFixInputTokens.min,
   );
-  const totalOutputTokens = sumValues(
-    averagedTokenEstimate.codeGenerationOutputTokens,
-    averagedTokenEstimate.validationAndFixOutputTokens,
+  const inputMax = sumValues(
+    normalizedTokenEstimate.planningAndContextTokens.max,
+    storyInputMax,
+    normalizedTokenEstimate.validationAndFixInputTokens.max,
   );
-  const totalTokens = totalInputTokens + totalOutputTokens;
-  const estimatedCost = estimateCost(totalInputTokens, totalOutputTokens, pricing);
+
+  const outputMin = sumValues(
+    storyOutputMin,
+    normalizedTokenEstimate.validationAndFixOutputTokens.min,
+  );
+  const outputMax = sumValues(
+    storyOutputMax,
+    normalizedTokenEstimate.validationAndFixOutputTokens.max,
+  );
+
+  const minCost = calculateCost(inputMin, outputMin, effectivePricing);
+  const maxCost = calculateCost(inputMax, outputMax, effectivePricing);
+  const averageCost = Number(((minCost + maxCost) / 2).toFixed(4));
+
+  // Cálculo do Custo Funcional baseado nas horas estimadas e na taxa horária
+  const avgHours = (backlog.estimatedHours.min + backlog.estimatedHours.max) / 2;
+  const functionalCost = avgHours * (effectivePricing.hourlyRate || 50.0);
+
+  logger.info('Cálculo de custo IA finalizado', {
+    inputMin,
+    inputMax,
+    outputMin,
+    outputMax,
+    minCost,
+    maxCost,
+    averageCost,
+    avgHours,
+    functionalCost,
+  });
 
   return {
     assumptions: {
@@ -50,80 +102,74 @@ export const estimateAICodeGeneration = (
     },
     tokenEstimate: {
       ...normalizedTokenEstimate,
-      totalInputTokens: exactRange(totalInputTokens),
-      totalOutputTokens: exactRange(totalOutputTokens),
-      totalTokens: exactRange(totalTokens),
+      codeGenerationInputTokens: { min: storyInputMin, max: storyInputMax },
+      codeGenerationOutputTokens: { min: storyOutputMin, max: storyOutputMax },
+      totalInputTokens: { min: inputMin, max: inputMax },
+      totalOutputTokens: { min: outputMin, max: outputMax },
+      totalTokens: { min: inputMin + outputMin, max: inputMax + outputMax },
     },
     costEstimate: {
       currency: 'USD',
-      inputCostPer1MTokens: pricing.inputCostPer1MTokens,
-      outputCostPer1MTokens: pricing.outputCostPer1MTokens,
-      min: estimatedCost,
-      max: estimatedCost,
+      inputCostPer1MTokens: effectivePricing.inputCostPer1MTokens,
+      outputCostPer1MTokens: effectivePricing.outputCostPer1MTokens,
+      min: minCost,
+      max: maxCost,
       display: {
-        range: formatCurrency(estimatedCost),
-        min: formatCurrency(estimatedCost),
-        max: formatCurrency(estimatedCost),
-        inputCostPer1MTokens: `${formatCurrency(pricing.inputCostPer1MTokens)} / 1M input tokens`,
-        outputCostPer1MTokens: `${formatCurrency(pricing.outputCostPer1MTokens)} / 1M output tokens`,
+        range: `${formatCurrency(minCost)} - ${formatCurrency(maxCost)}`,
+        min: formatCurrency(minCost),
+        max: formatCurrency(maxCost),
+        inputCostPer1MTokens: `${formatCurrency(effectivePricing.inputCostPer1MTokens)} / 1M input tokens`,
+        outputCostPer1MTokens: `${formatCurrency(effectivePricing.outputCostPer1MTokens)} / 1M output tokens`,
       },
       note:
-        'Custo calculado com aiPricing da request ou, se ausente, com AI_INPUT_COST_PER_1M_TOKENS e AI_OUTPUT_COST_PER_1M_TOKENS do ambiente. O backend usa a media dos ranges fornecidos pela LLM.',
+        'Custo calculado com aiPricing da request ou, se ausente, com AI_INPUT_COST_PER_1M_TOKENS e AI_OUTPUT_COST_PER_1M_TOKENS do ambiente.',
     },
     display: {
-      totalInputTokens: formatTokenValue(totalInputTokens),
-      totalOutputTokens: formatTokenValue(totalOutputTokens),
-      totalTokens: formatTokenValue(totalTokens),
-      estimatedCost: formatCurrency(estimatedCost),
-      pricing: `${formatCurrency(pricing.inputCostPer1MTokens)} / 1M input tokens, ${formatCurrency(pricing.outputCostPer1MTokens)} / 1M output tokens`,
+      totalInputTokens: formatTokenRange(inputMin, inputMax),
+      totalOutputTokens: formatTokenRange(outputMin, outputMax),
+      totalTokens: formatTokenRange(inputMin + outputMin, inputMax + outputMax),
+      estimatedCost: formatCurrency(averageCost),
+      pricing: `${formatCurrency(effectivePricing.inputCostPer1MTokens)} / 1M input tokens, ${formatCurrency(effectivePricing.outputCostPer1MTokens)} / 1M output tokens`,
+      complexityTotalCost: formatCurrency(functionalCost),
     },
   };
 };
 
 const normalizeTokenEstimate = (tokenEstimate: AITokenEstimate): AITokenEstimate => ({
   planningAndContextTokens: normalizeRange(tokenEstimate.planningAndContextTokens),
-  codeGenerationInputTokens: normalizeRange(tokenEstimate.codeGenerationInputTokens),
-  codeGenerationOutputTokens: normalizeRange(tokenEstimate.codeGenerationOutputTokens),
+  codeGenerationInputTokens: { min: 0, max: 0 }, // Será preenchido pela soma das histórias
+  codeGenerationOutputTokens: { min: 0, max: 0 }, // Será preenchido pela soma das histórias
   validationAndFixInputTokens: normalizeRange(tokenEstimate.validationAndFixInputTokens),
   validationAndFixOutputTokens: normalizeRange(tokenEstimate.validationAndFixOutputTokens),
 });
 
-const averageTokenEstimateRanges = (tokenEstimate: AITokenEstimate): AITokenEstimate => ({
-  planningAndContextTokens: averageRange(tokenEstimate.planningAndContextTokens),
-  codeGenerationInputTokens: averageRange(tokenEstimate.codeGenerationInputTokens),
-  codeGenerationOutputTokens: averageRange(tokenEstimate.codeGenerationOutputTokens),
-  validationAndFixInputTokens: averageRange(tokenEstimate.validationAndFixInputTokens),
-  validationAndFixOutputTokens: averageRange(tokenEstimate.validationAndFixOutputTokens),
-});
-
-const normalizeRange = (range: TokenRange): TokenRange => ({
-  min: Math.round(Math.min(range.min, range.max)),
-  max: Math.round(Math.max(range.min, range.max)),
-});
-
-const averageRange = (range: TokenRange): number =>
-  Math.round((range.min + range.max) / 2);
-
-const exactRange = (value: number): TokenRange => ({
-  min: value,
-  max: value,
-});
+const normalizeRange = (range: TokenRange): TokenRange => {
+  if (!range) return { min: 0, max: 0 };
+  return {
+    min: Math.max(0, Math.round(Math.min(range.min, range.max))),
+    max: Math.max(0, Math.round(Math.max(range.min, range.max))),
+  };
+};
 
 const sumValues = (...values: number[]): number =>
-  values.reduce((total, current) => total + current, 0);
+  values.reduce((total, current) => total + (current || 0), 0);
 
-const estimateCost = (
+const calculateCost = (
   inputTokens: number,
   outputTokens: number,
   pricing: AICodeGenerationPricing,
 ): number => {
-  const inputCost = (inputTokens / 1_000_000) * pricing.inputCostPer1MTokens;
-  const outputCost = (outputTokens / 1_000_000) * pricing.outputCostPer1MTokens;
+  const inputCost = (inputTokens / 1_000_000) * (pricing.inputCostPer1MTokens || 0);
+  const outputCost = (outputTokens / 1_000_000) * (pricing.outputCostPer1MTokens || 0);
 
-  return Number((inputCost + outputCost).toFixed(4));
+  const total = inputCost + outputCost;
+  // Se for maior que 0 mas menor que 0.0001, arredonda para cima para não sumir
+  if (total > 0 && total < 0.0001) return 0.0001;
+  return Number(total.toFixed(4));
 };
 
-const formatTokenValue = (value: number): string => `${formatInteger(value)} tokens`;
+const formatTokenRange = (min: number, max: number): string =>
+  `${formatInteger(min)} - ${formatInteger(max)} tokens`;
 
 const formatInteger = (value: number): string => new Intl.NumberFormat('en-US').format(value);
 

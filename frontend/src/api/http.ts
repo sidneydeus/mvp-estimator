@@ -13,8 +13,7 @@ export class HttpError extends Error {
 }
 
 function timeoutSignal(timeoutMs: number): AbortSignal {
-  if ('AbortSignal' in globalThis && 'timeout' in AbortSignal) {
-    // @ts-expect-error - lib.dom types may not include AbortSignal.timeout yet
+  if ('AbortSignal' in globalThis && 'timeout' in (AbortSignal as any)) {
     return AbortSignal.timeout(timeoutMs);
   }
   const controller = new AbortController();

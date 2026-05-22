@@ -2,6 +2,8 @@ import type { BacklogResult } from '../domain/types';
 import { ExportMarkdownButton } from './ExportMarkdownButton';
 
 export function EstimateResult(props: { result: BacklogResult }) {
+  const codeGen = props.result.aiCodeGenerationEstimate;
+
   return (
     <div className="card">
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
@@ -12,30 +14,51 @@ export function EstimateResult(props: { result: BacklogResult }) {
       </div>
 
       <div className="callout ok" style={{ marginTop: 12 }}>
-        <strong>Estimativa</strong>
+        <strong>Estimativa de Desenvolvimento</strong>
         <div className="row" style={{ marginTop: 8 }}>
           <span className="badge">
-            Tokens: <code>{props.result.totalTokens}</code>
+            Tokens Totais: <code>{codeGen?.display.totalTokens || 'N/A'}</code>
+          </span>
+          <span className="badge">
+            Custo Estimado (IA): <code>{codeGen?.display.estimatedCost || 'N/A'}</code>
+          </span>
+          <span className="badge">
+            Custo Funcional (Escopo): <code>{codeGen?.display.complexityTotalCost || 'N/A'}</code>
           </span>
           <span className="badge">
             Horas: <code>{props.result.estimatedHours.min}h</code> —{' '}
             <code>{props.result.estimatedHours.max}h</code>
           </span>
         </div>
+        {codeGen && (
+          <div style={{ marginTop: 10, borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 10 }}>
+            <div className="row" style={{ gap: 15 }}>
+              <span className="muted" style={{ fontSize: '0.85em' }}>
+                Entrada: <strong>{codeGen.display.totalInputTokens}</strong>
+              </span>
+              <span className="muted" style={{ fontSize: '0.85em' }}>
+                Saída: <strong>{codeGen.display.totalOutputTokens}</strong>
+              </span>
+            </div>
+            <p className="muted" style={{ margin: '5px 0 0', fontSize: '0.85em' }}>
+              Preço base: {codeGen.display.pricing}
+            </p>
+          </div>
+        )}
         <p className="muted" style={{ margin: '10px 0 0' }}>
-          Observação: estimativas são aproximadas e podem variar após refinamento.
+          Observação: o custo considera preços diferentes para tokens de entrada e saída.
         </p>
       </div>
 
       <div style={{ marginTop: 12 }}>
-        <h3 className="sectionTitle">Visão</h3>
+        <h3 className="sectionTitle">Visão e Análise do MVP</h3>
         <div className="callout">
-          <span>{props.result.vision}</span>
+          <div style={{ whiteSpace: 'pre-wrap' }}>{props.result.vision}</div>
         </div>
       </div>
 
       <div style={{ marginTop: 12 }}>
-        <h3 className="sectionTitle">Backlog</h3>
+        <h3 className="sectionTitle">Backlog Gerado</h3>
         {props.result.epics.map((epic) => (
           <div key={epic.id} className="epic">
             <h4>
@@ -50,7 +73,7 @@ export function EstimateResult(props: { result: BacklogResult }) {
                 </div>
                 <div className="muted">{story.description}</div>
                 <div className="muted" style={{ marginTop: 8 }}>
-                  Tokens (complexidade): <strong>{story.complexityTokens}</strong>
+                  Pontos de Complexidade: <strong>{story.complexityPoints}</strong>
                 </div>
                 <div style={{ marginTop: 8 }}>
                   <div className="muted">Critérios de aceitação:</div>

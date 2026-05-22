@@ -14,7 +14,7 @@ function storyToMd(story: UserStory) {
     `  - Descrição: ${escapeMd(story.description)}`,
     `  - Critérios de aceitação:`,
     ac,
-    `  - Tokens (complexidade): **${story.complexityTokens}**`,
+    `  - Pontos de Complexidade: **${story.complexityPoints}**`,
   ].join('\n');
 }
 
@@ -36,18 +36,28 @@ function epicToMd(epic: Epic) {
 
 export function backlogToMarkdown(result: BacklogResult) {
   const epicsMd = result.epics?.length ? result.epics.map((e) => epicToMd(e)).join('\n\n') : '';
+  const codeGen = result.aiCodeGenerationEstimate;
+
+  const estimateSection = [
+    '## Estimativa de Desenvolvimento (IA)',
+    '',
+    `- Tokens Totais: **${codeGen?.display.totalTokens || 'N/A'}**`,
+    `- Custo Estimado: **${codeGen?.display.estimatedCost || 'N/A'}**`,
+    `- Horas Estimadas: **${result.estimatedHours.min}h** — **${result.estimatedHours.max}h**`,
+  ];
+
+  if (codeGen) {
+    estimateSection.push(`- Preço base: ${codeGen.display.pricing}`);
+  }
 
   return [
     '# MVP Estimator — Backlog e Estimativa',
     '',
-    '## Visão',
+    '## Visão e Análise do MVP',
     '',
     escapeMd(result.vision),
     '',
-    '## Estimativa',
-    '',
-    `- Tokens totais: **${result.totalTokens}**`,
-    `- Horas estimadas: **${result.estimatedHours.min}h** — **${result.estimatedHours.max}h**`,
+    ...estimateSection,
     '',
     '---',
     '',
@@ -55,7 +65,7 @@ export function backlogToMarkdown(result: BacklogResult) {
     '',
     '---',
     '',
-    '_Observação: estimativas são aproximadas e podem variar conforme refinamento._',
+    '_Observação: estimativas são baseadas na análise da IA e podem variar conforme refinamento._',
     '',
   ].join('\n');
 }

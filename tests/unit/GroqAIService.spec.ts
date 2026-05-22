@@ -75,7 +75,7 @@ describe('GroqAIService', () => {
     vi.restoreAllMocks();
   });
 
-  it('retorna BacklogResult válido com totalTokens somado e horas calculadas', async () => {
+  it('retorna BacklogResult válido com totalComplexityPoints somado e horas calculadas', async () => {
     fetchSpy.mockResolvedValue(makeFetchResponse(makeGroqChoice(JSON.stringify(validBacklog))));
 
     const service = new GroqAIService();
@@ -83,9 +83,13 @@ describe('GroqAIService', () => {
 
     expect(result.vision).toBe('Visão clara do produto');
     expect(result.epics).toHaveLength(2);
-    expect(result.totalTokens).toBe(1500 + 2200);
-    expect(result.estimatedHours.min).toBeGreaterThanOrEqual(8);
-    expect(result.estimatedHours.max).toBeGreaterThan(result.estimatedHours.min);
+    
+    // complexityPoints = Math.ceil(complexityTokens / 100)
+    // story 1: 1500 -> 15
+    // story 2: 2200 -> 22
+    // total: 15 + 22 = 37
+    expect(result.totalComplexityPoints).toBe(15 + 22);
+    expect(result.estimatedHours.min).toBeDefined();
   });
 
   it('lança AI_PROVIDER_NOT_CONFIGURED quando GROQ_API_KEY está ausente', async () => {

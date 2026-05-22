@@ -12,6 +12,12 @@ export class MockAIService implements IAIService {
     // Simula um delay de processamento de IA
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
+    const totalComplexityPoints = 11;
+    const estimatedHours = {
+      min: Math.round(totalComplexityPoints * 8),
+      max: Math.round(totalComplexityPoints * 12),
+    };
+
     const backlog = {
       vision: `Visão do Produto baseada em: ${ideaDescription.substring(0, 50)}...`,
       epics: [
@@ -44,11 +50,8 @@ export class MockAIService implements IAIService {
           ],
         },
       ],
-      totalComplexityPoints: 11,
-      estimatedHours: {
-        min: 80,
-        max: 120,
-      },
+      totalComplexityPoints,
+      estimatedHours,
       aiTokenEstimate: {
         planningAndContextTokens: {
           min: 7_200,

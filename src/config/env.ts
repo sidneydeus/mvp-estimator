@@ -22,6 +22,7 @@ const envSchema = z.object({
   AI_MODEL: z.string().min(1).optional(),
   AI_INPUT_COST_PER_1M_TOKENS: numericEnv,
   AI_OUTPUT_COST_PER_1M_TOKENS: numericEnv,
+  AI_COST_PER_COMPLEXITY_POINT: numericEnv,
   OPENAI_API_KEY: z.string().min(1).optional(),
   OPENAI_MODEL: z.string().min(1).optional(),
 });

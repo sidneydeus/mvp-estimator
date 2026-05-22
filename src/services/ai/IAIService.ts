@@ -4,6 +4,10 @@ export interface UserStory {
   description: string;
   acceptanceCriteria: string[];
   complexityPoints: number;
+  estimatedTokens: {
+    input: TokenRange;
+    output: TokenRange;
+  };
 }
 
 export interface Epic {
@@ -35,6 +39,8 @@ export interface IAIService {
 export interface AICodeGenerationPricing {
   inputCostPer1MTokens: number;
   outputCostPer1MTokens: number;
+  costPerComplexityPoint?: number;
+  hourlyRate?: number;
 }
 
 export interface AITokenEstimate {
@@ -82,6 +88,7 @@ export interface AICodeGenerationEstimate {
     totalTokens: string;
     estimatedCost: string;
     pricing: string;
+    complexityTotalCost?: string;
   };
 }
 
