@@ -32,7 +32,8 @@ Antes de começar, você precisará ter instalado em sua máquina:
     ```bash
     cp .env.example .env
     ```
-    Edite o arquivo `.env` e configure as variáveis necessárias (como a porta e chaves de API).
+    Edite o arquivo `.env` e configure as variáveis necessárias.
+    Para ativar o agente de IA com Groq, defina `GROQ_API_KEY` e, opcionalmente, `GROQ_MODEL`.
 
 ### 💻 Executando a Aplicação
 
