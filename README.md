@@ -1,6 +1,6 @@
 # MVP Estimator
 
-O MVP Estimator é uma API desenvolvida para fornecer estimativas de custo e tempo para o desenvolvimento de MVPs (Minimum Viable Products), utilizando inteligência artificial para analisar os requisitos.
+O MVP Estimator é uma ferramenta desenvolvida para fornecer estimativas de custo e tempo para o desenvolvimento de MVPs (Minimum Viable Products), utilizando inteligência artificial para analisar os requisitos e gerar um backlog estruturado.
 
 ## 🚀 Como Executar o Projeto Localmente
 
@@ -9,7 +9,7 @@ O MVP Estimator é uma API desenvolvida para fornecer estimativas de custo e tem
 Antes de começar, você precisará ter instalado em sua máquina:
 * [Node.js](https://nodejs.org/) (versão 18 ou superior recomendada)
 * [npm](https://www.npmjs.com/) ou [yarn](https://yarnpkg.com/)
-* [Docker](https://www.docker.com/) e [Docker Compose](https://docs.docker.com/compose/) (opcional, para execução via containers)
+* [Docker](https://www.docker.com/) e [Docker Compose](https://docs.docker.com/compose/) (opcional)
 
 ### 🔧 Instalação
 
@@ -22,6 +22,7 @@ Antes de começar, você precisará ter instalado em sua máquina:
 2.  **Instale as dependências:**
     ```bash
     npm install
+    cd frontend && npm install && cd ..
     ```
 
 3.  **Configuração de Ambiente:**
@@ -29,143 +30,114 @@ Antes de começar, você precisará ter instalado em sua máquina:
     ```bash
     cp .env.example .env
     ```
-<<<<<<< HEAD
-    Edite o arquivo `.env` e configure as variáveis necessárias.
-    Para ativar o agente de IA com Groq, defina `GROQ_API_KEY` e, opcionalmente, `GROQ_MODEL`.
-=======
-    Edite o arquivo `.env` e configure a porta e o provedor de LLM.
 
-    Para rodar sem consultar uma LLM real:
+    Edite o arquivo `.env` e configure o provedor de LLM desejado.
+
+    #### Opções de Configuração de IA:
+
+    **Para rodar sem consultar uma LLM real (Mock):**
     ```env
     AI_PROVIDER=mock
     ```
 
-    Para usar um provedor compatível com OpenAI Chat Completions:
+    **Para usar um provedor compatível com OpenAI (OpenAI, Groq, Gemini, xAI, etc):**
     ```env
     AI_PROVIDER=openai-compatible
     AI_BASE_URL=https://api.openai.com/v1
     AI_API_KEY=sua_chave
     AI_MODEL=gpt-4o-mini
-    AI_INPUT_COST_PER_1M_TOKENS=0
-    AI_OUTPUT_COST_PER_1M_TOKENS=0
+    AI_INPUT_COST_PER_1M_TOKENS=0.15
+    AI_OUTPUT_COST_PER_1M_TOKENS=0.60
     ```
 
-    Exemplo com xAI/Grok:
-    ```env
-    AI_PROVIDER=openai-compatible
-    AI_BASE_URL=https://api.x.ai/v1
-    AI_API_KEY=sua_chave_xai
-    AI_MODEL=grok-4
-    AI_INPUT_COST_PER_1M_TOKENS=0
-    AI_OUTPUT_COST_PER_1M_TOKENS=0
-    ```
-
-    Exemplo com Google Gemini:
-    ```env
-    AI_PROVIDER=openai-compatible
-    AI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
-    AI_API_KEY=sua_chave_gemini
-    AI_MODEL=gemini-3.5-flash
-    AI_INPUT_COST_PER_1M_TOKENS=0
-    AI_OUTPUT_COST_PER_1M_TOKENS=0
-    ```
-
-    O backend chama `${AI_BASE_URL}/chat/completions`, então informe a base URL incluindo `/v1` quando o provedor exigir.
-    Configure `AI_INPUT_COST_PER_1M_TOKENS` e `AI_OUTPUT_COST_PER_1M_TOKENS` com os preços do modelo escolhido para calcular a estimativa de custo de geração de código.
-
-    Também é possível sobrescrever os preços por requisição:
-    ```json
-    {
-      "ideaDescription": "Quero criar uma plataforma SaaS para gestão de clínicas.",
-      "aiPricing": {
-        "inputCostPer1MTokens": 0.30,
-        "outputCostPer1MTokens": 2.50
-      }
-    }
-    ```
-
-    A LLM retorna a estimativa base de tokens em `aiTokenEstimate`. A aplicação calcula a media dos ranges, soma os valores e entrega `aiCodeGenerationEstimate` já pronto para exibicao usando `aiPricing` da request ou os preços do `.env`.
-
-    Para validar a conexão Gemini diretamente:
-    ```bash
-    curl "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions" \
-      -H "Content-Type: application/json" \
-      -H "Authorization: Bearer $AI_API_KEY" \
-      -d '{
-        "model": "gemini-3.5-flash",
-        "messages": [
-          { "role": "user", "content": "Responda apenas OK." }
-        ]
-      }'
-    ```
->>>>>>> feature/adr-backend
+    *Nota: Informe a `AI_BASE_URL` completa incluindo a versão (ex: `/v1`).*
+    *Configure os custos por 1 milhão de tokens para que a aplicação calcule a estimativa financeira de geração de código.*
 
 ### 💻 Executando a Aplicação
 
-#### Usando npm (Modo Desenvolvimento)
+#### Backend (Modo Desenvolvimento)
 
-Para iniciar o servidor com hot-reload (usando Vite):
+Para iniciar o servidor backend com hot-reload:
 ```bash
 npm run dev
 ```
-A API estará disponível em `http://localhost:3000` (ou na porta configurada no seu `.env`).
+A API estará disponível em `http://localhost:3000`.
+
+#### Frontend (Modo Desenvolvimento)
+
+Em outro terminal:
+```bash
+cd frontend
+npm run dev
+```
+O frontend estará disponível em `http://localhost:5173`.
 
 #### Usando Docker
 
-Se preferir rodar o projeto em um container isolado:
 ```bash
 docker-compose up --build
 ```
 
 ### 🧪 Executando Testes
 
-O projeto utiliza **Vitest** para testes unitários e de integração.
+O projeto utiliza **Vitest**.
 
-Para rodar todos os testes:
+Para rodar todos os testes do backend:
 ```bash
 npm test
 ```
 
-### 🏗️ Scripts Disponíveis
+Para rodar os testes do frontend:
+```bash
+cd frontend && npm test
+```
 
-*   `npm run dev`: Inicia o servidor em modo de desenvolvimento.
-*   `npm run build`: Gera o build de produção.
-*   `npm run start`: Inicia o servidor em modo de produção (após o build).
-*   `npm run test`: Executa a suíte de testes.
+### 🏗️ Scripts Disponíveis (Raiz)
+
+*   `npm run dev`: Inicia o backend via Vite (vite-plugin-node).
+*   `npm run build`: Gera o build de produção do backend.
+*   `npm run start`: Inicia o backend em produção.
+*   `npm test`: Executa os testes do backend.
 
 ## 🛠️ Tecnologias Utilizadas
 
 ### Backend
-*   [Express](https://expressjs.com/): Framework web para Node.js.
-*   [Vite](https://vitejs.dev/): Ferramenta de build e desenvolvimento ultra-rápida.
-*   [TypeScript](https://www.typescriptlang.org/): Superset de JavaScript com tipagem estática.
+*   [Node.js](https://nodejs.org/) + [Express](https://expressjs.com/)
+*   [TypeScript](https://www.typescriptlang.org/)
+*   [Vite](https://vitejs.dev/) + [vite-node](https://github.com/antfu/vite-node): Ambiente de execução e build.
 *   [Zod](https://zod.dev/): Validação de esquemas e tipos.
 *   [Vitest](https://vitest.dev/): Framework de testes.
 
 ### Frontend
-*   [React](https://react.dev/) + [Vite](https://vitejs.dev/): SPA em `frontend/`.
+*   [React](https://react.dev/)
+*   [TypeScript](https://www.typescriptlang.org/)
+*   [Vite](https://vitejs.dev/)
+*   [CSS Modules / Vanilla CSS](https://developer.mozilla.org/en-US/docs/Web/CSS)
 
 ### IA
-*   [Groq Cloud](https://groq.com/) com modelo padrão `openai/gpt-oss-20b` para geração do backlog.
-*   `MockAIService` em desenvolvimento sem chave ou em ambiente de testes — selecionado automaticamente pelo `aiServiceFactory`.
+*   Provedores compatíveis com a API da OpenAI (configurável via env).
+*   `OpenAIService`: Implementação genérica para consumo de LLMs.
+*   `MockAIService`: Para desenvolvimento offline e testes.
 
 ## 📚 Documentação
 
-A documentação técnica e de produto está versionada em [`docs/`](./docs):
+A documentação completa está em [`docs/`](./docs):
 
 | Documento | Conteúdo |
 |---|---|
-| [`docs/PRD.md`](./docs/PRD.md) | Product Requirements Document — visão, personas, escopo do MVP |
-| [`docs/STEERING.md`](./docs/STEERING.md) | Princípios arquiteturais e direcionamento estratégico |
-| [`docs/ADR-BACKEND.md`](./docs/ADR-BACKEND.md) | Architecture Decision Record do backend (Express, MVC, Docker) |
-| [`docs/ADR-FRONTEND.md`](./docs/ADR-FRONTEND.md) | ADR do frontend (React + Vite, consumo da API) |
-| [`docs/VIABILIDADE.md`](./docs/VIABILIDADE.md) | Documento de viabilidade técnica: problema, papel da IA, custo/benefício, limitações com causa raiz, próximos passos |
-| [`docs/USER-STORIES.md`](./docs/USER-STORIES.md) | 3 user stories no padrão INVEST, geradas com IA, com mapeamento técnico |
-| [`docs/UML.md`](./docs/UML.md) | Diagramas UML (sequência, classes, componentes) em Mermaid |
-| [`docs/FLUXOGRAMA.md`](./docs/FLUXOGRAMA.md) | Fluxograma completo do produto (caminho feliz + erros) em Mermaid |
-| [`docs/DEV-PLANNING.md`](./docs/DEV-PLANNING.md) | Planejamento de desenvolvimento |
-| [`docs/PROMPTS.MD`](./docs/PROMPTS.MD) | Registro de todos os prompts utilizados — evidência obrigatória |
+| [`docs/PRD.md`](./docs/PRD.md) | Product Requirements Document |
+| [`docs/ADR-BACKEND.md`](./docs/ADR-BACKEND.md) | Decisões de arquitetura do backend |
+| [`docs/ADR-FRONTEND.md`](./docs/ADR-FRONTEND.md) | Decisões de arquitetura do frontend |
+| [`docs/VIABILIDADE.md`](./docs/VIABILIDADE.md) | Análise de viabilidade técnica e papel da IA |
+| [`docs/UML.md`](./docs/UML.md) | Diagramas de arquitetura (Mermaid) |
+| [`docs/FLUXOGRAMA.md`](./docs/FLUXOGRAMA.md) | Fluxo de navegação e lógica do produto |
 
 ## 🤖 Papel da IA no Produto
 
-A IA é o **núcleo funcional do produto** — não apenas auxílio de desenvolvimento. O endpoint `POST /api/v1/estimates` recebe a descrição da ideia em linguagem natural e devolve um backlog estruturado (Visão → Épicos → User Stories → Critérios de aceitação) com estimativa de horas baseada em densidade de tokens. Veja [`docs/VIABILIDADE.md`](./docs/VIABILIDADE.md) para a justificativa técnica completa.
+A IA é o motor central do MVP Estimator. Ela analisa a descrição da ideia e gera:
+1.  **Visão do Produto**: Resumo estratégico.
+2.  **Backlog Estruturado**: Épicos e Histórias de Usuário.
+3.  **Critérios de Aceitação**: Detalhamento técnico para cada história.
+4.  **Estimativa de Esforço**: Pontos de complexidade (Fibonacci).
+5.  **Estimativa de Tokens**: Projeção de consumo de tokens para geração de código assistida por IA.
+6.  **Estimativa Financeira**: Cálculo baseado nos preços do modelo configurado.

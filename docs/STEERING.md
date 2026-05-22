@@ -28,9 +28,10 @@ Ao operar neste repositório, todos os agentes de IA devem aderir a:
 - **Tom de Voz:** Profissional, nível sênior e orientado a dados.
 
 ## 5. Stack Técnica e Dependências
-- **Motor:** Orquestração baseada em Node.js (LangGraph.js / CrewAI-like JS agents).
-- **Modelos:** Otimizados para raciocínio (GPT-4o, Claude 3.5 Sonnet, Gemini 1.5 Pro).
-- **Persistência de Dados:** Git para snapshots versionados do projeto e Vector DB para recuperação de contexto (se necessário).
+- **Motor:** Node.js + Express + TypeScript.
+- **Modelos:** Provedores compatíveis com OpenAI API (OpenAI, Groq, Gemini, etc).
+- **Orquestração:** Implementação personalizada de Strategy Pattern para serviços de IA.
+- **Ambiente:** Containerização completa via Docker.
 
 ## 6. Roadmap Fase 1 (MVP)
 1.  **Ingestão de Entrada:** Interface WEB (página com formulário) para descrição bruta da ideia.
