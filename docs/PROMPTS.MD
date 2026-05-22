@@ -234,3 +234,7 @@ Faça um ADR-FRONTEND.md, incluindo:
 =================================================================================================
 
 Crie um diretório chamado frontend e desenvolva conforme o ADR-FRONTEND.MD
+
+=================================================================================================
+
+Implemente uma funcionalidade de Agente de IA integrada ao backend existente utilizando a API da Groq com a variável de ambiente GROQ_API_KEY. A funcionalidade deve receber um texto do usuário, enviar para a API da Groq e retornar a resposta exatamente no padrão de formatação já utilizado pelo backend. Use o mockup como referência visual e estrutural.
