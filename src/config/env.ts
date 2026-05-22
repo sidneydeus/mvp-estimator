@@ -6,8 +6,7 @@ dotenv.config();
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.string().transform(Number).default('3000'),
-  GROQ_API_KEY: z.string().min(1).optional(),
-  GROQ_MODEL: z.string().default('openai/gpt-oss-20b'),
+  // Adicione outras variáveis conforme necessário (ex: OPENAI_API_KEY)
 });
 
 const _env = envSchema.safeParse(process.env);

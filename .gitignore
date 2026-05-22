@@ -33,5 +33,3 @@ logs/
 
 # Vite
 *.tsbuildinfo
-
-.env
