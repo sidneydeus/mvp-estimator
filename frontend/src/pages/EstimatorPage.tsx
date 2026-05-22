@@ -4,6 +4,7 @@ import type { ApiError, ApiSuccess, BacklogResult } from '../domain/types';
 import { IdeaForm } from '../components/IdeaForm';
 import { ErrorCallout } from '../components/ErrorCallout';
 import { EstimateResult } from '../components/EstimateResult';
+import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { HttpError } from '../api/http';
 
 const IDEA_MIN = 10;
@@ -13,9 +14,7 @@ export function EstimatorPage() {
   const [idea, setIdea] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<BacklogResult | null>(null);
-  const [error, setError] = useState<{ title: string; message?: string; details?: unknown } | null>(
-    null,
-  );
+  const [error, setError] = useState<{ title: string; message?: string; details?: unknown } | null>(null);
 
   const isValid = useMemo(() => idea.trim().length >= IDEA_MIN, [idea]);
 
@@ -53,37 +52,54 @@ export function EstimatorPage() {
     }
   }
 
+  function onClear() {
+    setIdea('');
+    setResult(null);
+    setError(null);
+  }
+
   return (
     <>
       <IdeaForm value={idea} onChange={setIdea} disabled={loading} maxLength={IDEA_MAX} />
 
+      {/* Actions */}
       <div className="card">
         <h3 className="sectionTitle">Ações</h3>
         <div className="row">
-          <button className="btn primary" disabled={!isValid || loading} onClick={onSubmit}>
-            {loading ? 'Gerando…' : 'Gerar estimativa'}
-          </button>
           <button
-            className="btn"
-            disabled={loading}
-            onClick={() => {
-              setIdea('');
-              setResult(null);
-              setError(null);
-            }}
+            className="btn primary"
+            disabled={!isValid || loading}
+            onClick={onSubmit}
+            aria-busy={loading}
           >
-            Limpar
+            {loading ? (
+              <>
+                <span className="spinner" aria-hidden="true" />
+                Gerando…
+              </>
+            ) : (
+              '⚡ Gerar estimativa'
+            )}
           </button>
+
+          <button className="btn" disabled={loading} onClick={onClear}>
+            🗑 Limpar
+          </button>
+
           <span className="badge">
-            Min: <code>{IDEA_MIN}</code> chars • Timeout: <code>60s</code>
+            Mín: <code>{IDEA_MIN}</code> chars
+          </span>
+          <span className="badge">
+            Timeout: <code>60s</code>
           </span>
         </div>
         <p className="muted" style={{ margin: '10px 0 0' }}>
-          Ao enviar, você concorda que esta é uma estimativa aproximada baseada em tokens.
+          Ao enviar, você concorda que esta é uma estimativa aproximada baseada em tokens de complexidade.
         </p>
       </div>
 
-      {error ? (
+      {/* Error */}
+      {error && (
         <ErrorCallout title={error.title}>
           <div className="muted">{error.message}</div>
           {error.details ? (
@@ -92,19 +108,23 @@ export function EstimatorPage() {
                 marginTop: 10,
                 whiteSpace: 'pre-wrap',
                 background: 'rgba(0,0,0,0.25)',
-                border: '1px solid rgba(255,255,255,0.14)',
-                padding: 10,
-                borderRadius: 12,
+                border: '1px solid rgba(255,255,255,0.1)',
+                padding: 12,
+                borderRadius: 10,
+                fontSize: 12,
               }}
             >
               {JSON.stringify(error.details, null, 2)}
             </pre>
           ) : null}
         </ErrorCallout>
-      ) : null}
+      )}
 
-      {result ? <EstimateResult result={result} /> : null}
+      {/* Loading skeleton */}
+      {loading && <LoadingSkeleton />}
+
+      {/* Result */}
+      {result && !loading && <EstimateResult result={result} />}
     </>
   );
 }
-

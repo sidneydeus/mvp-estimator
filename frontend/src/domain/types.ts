@@ -4,6 +4,10 @@ export interface UserStory {
   description: string;
   acceptanceCriteria: string[];
   complexityPoints: number;
+  estimatedTokens?: {
+    input: TokenRange;
+    output: TokenRange;
+  };
 }
 
 export interface Epic {
@@ -75,8 +79,8 @@ export interface BacklogResult {
     min: number;
     max: number;
   };
-  aiTokenEstimate?: AITokenEstimate;
-  aiCodeGenerationEstimate?: AICodeGenerationEstimate;
+  aiTokenEstimate: AITokenEstimate;
+  aiCodeGenerationEstimate: AICodeGenerationEstimate;
 }
 
 export interface ApiSuccess<T> {
